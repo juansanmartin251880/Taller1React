@@ -65,6 +65,7 @@ function App() {
   }
 
   const deletePet = () => {
+
     if(idDeletion){
       const id = idDeletion;
       if(selectedPet.id === id){
@@ -90,14 +91,39 @@ function App() {
     setshowDeletionConfirmModal(true);
   }
 
-  const editPet = () => {
-    console.log('Editing pet');
+  const handleEdit = (pet) => {
+    seteditMode(true);
+    setpetForm(pet);
+    setShowCreateEditModal(true);
   }
 
-  // const handleEditMode = () => {
-  //   seteditMode(true);
-  //   setShowCreateEditModal(true);
-  // }
+  const handleAddButtonClick = () => {
+    seteditMode(false);
+    setpetForm(getEmptyPet());
+    handleShowCreateEditModal();
+  }
+
+  const editPet = (petEdit) => {
+    console.log(petEdit);
+    const tempArray = listPets.map(pet => {
+      if(pet.id === petEdit.id){
+        console.log('id found, changing pet');
+        console.log(pet);
+        console.log(petEdit);
+        return petEdit;
+      }
+      return pet;
+    });
+
+    setlistPets(tempArray);
+    console.log('After editing, these are the current pets');
+    console.log(listPets);
+
+    setShowCreateEditModal(false);
+    seteditMode(false);
+
+    setpetForm(getEmptyPet());
+  }
 
   return (
     <div className="App">
@@ -124,9 +150,9 @@ function App() {
                         <div className="col-4">{pet.petName}</div>
                         <div className="col-4">{pet.petType}</div>
                         <div className="col-4">
-                          <button type="button" className="btn btn-light">Ed</button>
-                          <button type="button" className="btn btn-light" style={{marginLeft:"5px"}} onClick={() => selectPet(pet)}>De</button>
-                          <button type="button" className="btn btn-light" style={{marginLeft:"5px"}} onClick={() => handleDeleteMode(pet.id)}>Del</button>
+                          <button type="button" className="btn btn-light" style={{marginLeft:"5px", marginTop:"5px"}} onClick={() => handleEdit(pet)}><i className="bi bi-pencil"></i></button>
+                          <button type="button" className="btn btn-light" style={{marginLeft:"5px", marginTop:"5px"}} onClick={() => selectPet(pet)}><i className="bi bi-eye"></i></button>
+                          <button type="button" className="btn btn-light" style={{marginLeft:"5px", marginTop:"5px"}} onClick={() => handleDeleteMode(pet.id)}><i className="bi bi-trash"></i></button>
                         </div>
                       </div>
                     ))
@@ -175,7 +201,7 @@ function App() {
           <div className="col-4"></div>
           <div className="col-2"></div>
           <div className="col-3">
-            <button type="button" className="btn btn-primary" onClick={handleShowCreateEditModal}>{!editMode ? "Add pet" : "Edit pet"}</button>
+            <button type="button" className="btn btn-primary" onClick={handleAddButtonClick}>Add pet</button>
           </div>
         </div>
       </div>
@@ -186,7 +212,7 @@ function App() {
         shouldCloseOnOverlayClick={false}
       >
         <div>
-          <h3>Add a new pet</h3>
+          <h3>{ !editMode ? "Add a new pet" : "Edit Pet"}</h3>
           <hr/>
           <div>
             <form>
@@ -223,7 +249,7 @@ function App() {
                 <input type="email" className="form-control" id="email" placeholder="Enter your email" onChange={handleChange} name="email" value={petForm.email} required/>
               </div>
               
-              <button type="submit" className="btn btn-primary mt-3" onClick={!editMode ? addPet : editPet}>Edit Pet</button>
+              <button type="button" className="btn btn-primary mt-3" onClick={!editMode ? addPet : () => editPet(petForm)}>{ !editMode ? "Add Pet" : "Edit Pet"}</button>
               <button type="button" className="btn btn-secondary mt-3" style={{marginLeft: "5px"}} onClick={handleHideCreateEditModal}>Close</button>
 
             </form>
@@ -243,7 +269,7 @@ function App() {
               <p>Are you really sure you want to delete this register?</p>
               
               <button type="submit" className="btn btn-primary mt-3" onClick={deletePet()}>Yes</button>
-              <button type="button" className="btn btn-secondary mt-3" style={{marginLeft: "5px"}} onClick={handleHideCreateEditModal}>No</button>
+              <button type="button" className="btn btn-secondary mt-3" style={{marginLeft: "5px"}} onClick={() => {setshowDeletionConfirmModal(false)}}>No</button>
 
             </form>
           </div>
