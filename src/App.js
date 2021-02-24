@@ -64,12 +64,16 @@ function App() {
     setShowCreateEditModal(false);
   }
 
-  const deletePet = (id) => {
-    if(selectedPet.id === id){
-      setselectedPet({});
+  const deletePet = () => {
+    if(idDeletion){
+      const id = idDeletion;
+      if(selectedPet.id === id){
+        setselectedPet({});
+      }
+      const filteredPets = listPets.filter((pet) => pet.id !== id);
+      setlistPets(filteredPets);
+      setidDeletion("");
     }
-    const filteredPets = listPets.filter((pet) => pet.id !== id);
-    setlistPets(filteredPets);
   }
 
   const selectPet = (pet) => {
@@ -84,6 +88,10 @@ function App() {
   const handleDeleteMode = (id) =>{
     setidDeletion(id);
     setshowDeletionConfirmModal(true);
+  }
+
+  const editPet = () => {
+    console.log('Editing pet');
   }
 
   // const handleEditMode = () => {
@@ -101,7 +109,7 @@ function App() {
           <div className="col-8 petList" style={{backgroundColor: "#cab", borderRadius: "5px"}}>
             {
               size(listPets) === 0 ?
-                <p className="text-center mt-3">There are no pets registered, c'mon! add a new friend by clicking the button down below</p>
+                <p className="text-center mt-3">There are no pets registered, come on! add a new friend by clicking the button down below</p>
               :
                 <div className="container mt-2" >
                   <div className="row tableHeader" style={{backgroundColor: "#eee"}}>
@@ -167,14 +175,14 @@ function App() {
           <div className="col-4"></div>
           <div className="col-2"></div>
           <div className="col-3">
-            <button type="button" className="btn btn-primary" onClick={handleShowCreateEditModal}>{editMode ? "Add pet" : "Edit pet"}</button>
+            <button type="button" className="btn btn-primary" onClick={handleShowCreateEditModal}>{!editMode ? "Add pet" : "Edit pet"}</button>
           </div>
         </div>
       </div>
       
 
       <Modal
-        isOpen={showDeletionConfirmModal}
+        isOpen={showCreateEditModal}showCreateEditModal
         shouldCloseOnOverlayClick={false}
       >
         <div>
@@ -215,7 +223,7 @@ function App() {
                 <input type="email" className="form-control" id="email" placeholder="Enter your email" onChange={handleChange} name="email" value={petForm.email} required/>
               </div>
               
-              <button type="submit" className="btn btn-primary mt-3" onClick={addPet}>Add Pet</button>
+              <button type="submit" className="btn btn-primary mt-3" onClick={!editMode ? addPet : editPet}>Edit Pet</button>
               <button type="button" className="btn btn-secondary mt-3" style={{marginLeft: "5px"}} onClick={handleHideCreateEditModal}>Close</button>
 
             </form>
@@ -224,7 +232,7 @@ function App() {
       </Modal>
 
       <Modal
-        isOpen={showCreateEditModal}
+        isOpen={showDeletionConfirmModal}
         shouldCloseOnOverlayClick={false}
       >
         <div>
@@ -234,7 +242,7 @@ function App() {
             <form>
               <p>Are you really sure you want to delete this register?</p>
               
-              <button type="submit" className="btn btn-primary mt-3" onClick={deletePet(idDeletion)}>Yes</button>
+              <button type="submit" className="btn btn-primary mt-3" onClick={deletePet()}>Yes</button>
               <button type="button" className="btn btn-secondary mt-3" style={{marginLeft: "5px"}} onClick={handleHideCreateEditModal}>No</button>
 
             </form>
