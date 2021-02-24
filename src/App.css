@@ -1,39 +1,40 @@
-.App {
+.divInfo>div>label{
+  text-align: left;
+}
+
+.divInfo>div>p{
+  text-align: center;
+  background-color: #f0d4d7;
+  border-radius: 5px;
+}
+
+.tableHeader, .tableRow{
+  border-radius: 5px;
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.petList{
+  min-height: 50%;
+  max-height: 50%;
+  overflow-x: auto;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.App{
+  background-color: #6722a7f8;
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+  margin-left: 1.5rem;
+  margin-right: 1.5rem;
+  margin-top: 2rem;
+  border-radius: 7px;
+  box-shadow: 2px 2px 7px #222222;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+body{
+  background-color: #ef8b8b;
 }
 
-.App-link {
-  color: #61dafb;
+.title{
+  color: #e9d0e7;
+  font-size: 4rem;
 }
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
