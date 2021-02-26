@@ -1,8 +1,8 @@
 import './App.css';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Modal from 'react-modal';
-import shortid from 'shortid';
 import { isEmpty, size } from 'lodash';
+import { addDocument, getCollection, updateDocument, deleteDocument } from './actions';
 
 Modal.setAppElement('#root');
 
@@ -18,10 +18,11 @@ function App() {
 
   const getEmptyPet = () => {
     return {
-      id: "",
+      //id: "",
       petName: "",
       petType: "",
       breed: "",
+      birthdate: "",
       fName: "",
       lName: "",
       phone: "",
@@ -36,36 +37,48 @@ function App() {
   const [editMode, seteditMode] = useState(false);
   const [idDeletion, setidDeletion] = useState("");
 
-  const addPet = (e) =>{
-    e.preventDefault();
+  const addPet = async (e) =>{
+    console.log(listPets);
+    try{e.preventDefault();
 
     if(isEmpty(petForm)){
       console.log("Task is empty");
       return;
     }
 
-    const newPet = {
-      id: shortid.generate(),
-      petName: petForm.petName,
-      petType: petForm.petType,
-      breed: petForm.breed,
-      fName: petForm.fName,
-      lName: petForm.lName,
-      phone: petForm.phone,
-      address: petForm.address,
-      email: petForm.email
-    }
-    console.log('Adding a new pet');
-    console.table(newPet);
+    const result = await addDocument("pets", { ...petForm });
 
-    setlistPets([...listPets, newPet]);
-    console.log(listPets);
+    // const newPet = {
+    //   id: shortid.generate(),
+    //   petName: petForm.petName,
+    //   petType: petForm.petType,
+    //   breed: petForm.breed,
+    //   fName: petForm.fName,
+    //   lName: petForm.lName,
+    //   phone: petForm.phone,
+    //   address: petForm.address,
+    //   email: petForm.email
+    // }
+
+    if(!result.statusResponse){
+      return;
+    }
+    console.log('result.data.id' + result.data.id);
+    setlistPets([...listPets, { id: result.data.id, ...petForm }]);
+    
     setpetForm(getEmptyPet());
     setShowCreateEditModal(false);
+  }catch(e){
+    console.log(e);
+  }
   }
 
-  const deletePet = () => {
-
+  const deletePet = async () => {
+    console.log('idDeletion: ' + idDeletion);
+    const result = await deleteDocument('pets', idDeletion);
+    if(!result.statusResponse){
+      return;
+    }
     if(idDeletion){
       const id = idDeletion;
       if(selectedPet.id === id){
@@ -74,6 +87,7 @@ function App() {
       const filteredPets = listPets.filter((pet) => pet.id !== id);
       setlistPets(filteredPets);
       setidDeletion("");
+      setshowDeletionConfirmModal(false);
     }
   }
 
@@ -87,6 +101,7 @@ function App() {
   }
 
   const handleDeleteMode = (id) =>{
+    console.log('handling delete mode');
     setidDeletion(id);
     setshowDeletionConfirmModal(true);
   }
@@ -103,13 +118,23 @@ function App() {
     handleShowCreateEditModal();
   }
 
-  const editPet = (petEdit) => {
+  const editPet = async (petEdit) => {
+    const result = await updateDocument('pets', petEdit.id, petEdit);
+    if(!result.statusResponse){
+      return;
+    }
+
     console.log(petEdit);
     const tempArray = listPets.map(pet => {
       if(pet.id === petEdit.id){
         console.log('id found, changing pet');
         console.log(pet);
         console.log(petEdit);
+
+        if(selectedPet.id === pet.id){
+          setselectedPet(petEdit);
+        }
+
         return petEdit;
       }
       return pet;
@@ -125,11 +150,21 @@ function App() {
     setpetForm(getEmptyPet());
   }
 
+  useEffect(() => {
+    (async () => {
+      const result = await getCollection('pets');
+      if(result.statusResponse){
+        setlistPets(result.data);
+      }
+    })()
+  }, []);
+
   return (
     <div className="App">
       <div className="container">
         <div className="row">
-          <h1 className="title text-center">Pet Heaven</h1>
+          <h1 className="title text-center">Pet Heaven Vet</h1>
+          <h4 className="subtitle text-center">Taking care of our best friends</h4>
         </div>
         <div className="row mt-3">
           <div className="col-8 petList" style={{backgroundColor: "#cab", borderRadius: "5px"}}>
@@ -179,6 +214,9 @@ function App() {
                     <label>Breed:</label>
                     <p>{selectedPet.breed}</p>
 
+                    <label>Birth Date:</label>
+                    <p>{selectedPet.birthdate}</p>
+
                     <label>Owner's first name:</label>
                     <p>{selectedPet.fName}</p>
 
@@ -201,7 +239,7 @@ function App() {
           <div className="col-4"></div>
           <div className="col-2"></div>
           <div className="col-3">
-            <button type="button" className="btn btn-primary" onClick={handleAddButtonClick}>Add pet</button>
+            <button type="button" className="btn btn-light" onClick={handleAddButtonClick}>Add pet</button>
           </div>
         </div>
       </div>
@@ -229,6 +267,10 @@ function App() {
                 <input type="text" className="form-control" id="petBreed" placeholder="Enter your pet's breed" onChange={handleChange} name="breed" value={petForm.breed} required/>
               </div>
               <div className="form-group">
+                <label htmlFor="birthdate">Birth date</label>
+                <input type="date" className="form-control" id="birthdate" placeholder="Enter your pet's birth date" onChange={handleChange} name="birthdate" value={petForm.birthdate} required/>
+              </div>
+              <div className="form-group">
                 <label htmlFor="firstName">Owner's first name</label>
                 <input type="text" className="form-control" id="firstName" placeholder="Enter your first name" onChange={handleChange} name="fName" value={petForm.fName} required/>
               </div>
@@ -249,8 +291,8 @@ function App() {
                 <input type="email" className="form-control" id="email" placeholder="Enter your email" onChange={handleChange} name="email" value={petForm.email} required/>
               </div>
               
-              <button type="button" className="btn btn-primary mt-3" onClick={!editMode ? addPet : () => editPet(petForm)}>{ !editMode ? "Add Pet" : "Edit Pet"}</button>
-              <button type="button" className="btn btn-secondary mt-3" style={{marginLeft: "5px"}} onClick={handleHideCreateEditModal}>Close</button>
+              <button type="button" className="btn btn-light mt-3" onClick={!editMode ? addPet : () => editPet(petForm)}>{ !editMode ? "Add Pet" : "Edit Pet"}</button>
+              <button type="button" className="btn btn-light mt-3" style={{marginLeft: "5px"}} onClick={handleHideCreateEditModal}>Close</button>
 
             </form>
           </div>
@@ -258,17 +300,18 @@ function App() {
       </Modal>
 
       <Modal
+        id="modalDelete"
         isOpen={showDeletionConfirmModal}
         shouldCloseOnOverlayClick={false}
       >
         <div>
-          <h3>Add a new pet</h3>
+          <h3>Delete pet</h3>
           <hr/>
           <div>
             <form>
               <p>Are you really sure you want to delete this register?</p>
               
-              <button type="submit" className="btn btn-primary mt-3" onClick={deletePet()}>Yes</button>
+              <button type="button" className="btn btn-light mt-3" onClick={deletePet}>Yes</button>
               <button type="button" className="btn btn-secondary mt-3" style={{marginLeft: "5px"}} onClick={() => {setshowDeletionConfirmModal(false)}}>No</button>
 
             </form>
